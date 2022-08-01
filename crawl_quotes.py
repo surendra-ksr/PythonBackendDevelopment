@@ -47,31 +47,6 @@ while flag:
 
 authorUrlsList = list(authorUrlsSet)
 
-"""authorPageUrl = "http://quotes.toscrape.com/author/Jimi-Hendrix/"
-authorPage = requests.get(authorPageUrl)
-authorPageSoup = BeautifulSoup(authorPage.content, "html.parser")
-authorDate = authorPageSoup.find_all("span", class_="author-born-date")
-authorLocation = authorPageSoup.find_all("span", class_="author-born-location")
-author= dict()
-for date in authorDate:
-    dateEle = date.text
-    
-for each in authorLocation:
-    locatonEle = each.text
-
-born = dateEle+" "+locatonEle
-    
-authorNameDiv = authorPageSoup.find("h3", class_="author-title")
-for each in authorNameDiv:
-    author["name"] = each
-    break
-
-author["born"] = born
-author["reference"] = authorPageUrl
-
-
-print(author)"""
-
 
 for authorUrl in authorUrlsList:
     authorPageUrl = f"http://quotes.toscrape.com/{authorUrl}"
@@ -102,5 +77,7 @@ for authorUrl in authorUrlsList:
 quotesFinalObject["quotes"] = quotes
 quotesFinalObject["authors"] = authors
 
-print(quotesFinalObject)
  
+
+jsonFile = open("quotes.json","w")
+json.dump(quotesFinalObject,jsonFile, indent=4)
