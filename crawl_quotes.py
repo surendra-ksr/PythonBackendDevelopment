@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
+import json
 
+quotesFinalObject = dict()
 quotes = []
 authors = []
 flag = True
@@ -27,7 +29,7 @@ while flag:
         authorLinks = quoteDiv.find_all("a")
         for link in authorLinks:
             linkUrl = link["href"]
-            if "author" in linkUrl:
+            if "/author/" in linkUrl:
                 authorUrlsSet.add(linkUrl)
 
 
@@ -89,6 +91,7 @@ for authorUrl in authorUrlsList:
     authorNameDiv = authorPageSoup.find("h3", class_="author-title")
     for each in authorNameDiv:
         author["name"] = each
+        
         break
 
     author["born"] = born
@@ -96,5 +99,8 @@ for authorUrl in authorUrlsList:
 
     authors.append(author)
 
-print(authors)
+quotesFinalObject["quotes"] = quotes
+quotesFinalObject["authors"] = authors
+
+print(quotesFinalObject)
  
