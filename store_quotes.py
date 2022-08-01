@@ -12,9 +12,9 @@ createTable_command = """CREATE TABLE quotes (
     quote TEXT,
     author VARCHAR(200));"""
 
-cursorObject.execute(createTable_command)
+"""cursorObject.execute(createTable_command)"""
 
-createTagsTable_command = """CREATE TABLE author (
+createTagsTable_command = """CREATE TABLE tags (
     tag_id INTEGER PRIMARY KEY,
     tag VARCHAR(100),
     quote_id INTEGER,
@@ -23,7 +23,7 @@ createTagsTable_command = """CREATE TABLE author (
 cursorObject.execute(createTagsTable_command)
 
 insertQuotesCommand = "INSERT INTO quotes VALUES(?,?,?);"
-insertTagsCommand = "INSERT INTO author VALUES(?,?,?);"
+insertTagsCommand = "INSERT INTO tags VALUES(?,?,?);"
  
 jsonFile = open("quotes.json","r")
 jsonData = json.load(jsonFile)
@@ -40,7 +40,6 @@ for data in jsonData:
         for each in quoteObject["tags"]:
             cursorObject.execute(insertTagsCommand,(tagCount,each,quoteCount))
             tagCount +=1
-    break   
-
+    break
 
 dbConnection.commit()
