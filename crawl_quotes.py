@@ -5,6 +5,7 @@ import json
 quotesFinalObject = dict()
 quotes = []
 authors = []
+# flag is used to stop the function if the last page is reached.
 flag = True
 pageNo = 1
 authorUrlsSet = set()
@@ -21,6 +22,7 @@ while flag:
         
         quoteElements = quoteDiv.find_all("span",class_="text")
         for quoteItem in quoteElements:
+            # Using replace() to remove the extra quotes(") from the quotes extracted
             quoteItem = quoteItem.text.replace('\u201c', '').replace('\u201d', '')
             quoteData["quote"] = quoteItem
 
@@ -41,7 +43,7 @@ while flag:
 
         quoteData["tags"] = tags
         quotes.append(quoteData)
-
+    # Checking if the last page is reached.
     if nextElement==[]:
         flag = False
     pageNo +=1
@@ -79,6 +81,8 @@ quotesFinalObject["quotes"] = quotes
 quotesFinalObject["authors"] = authors
 
 
-
+#Opening json file with 'write' access mode.
 jsonFile = open("quotes.json","w")
+
+# Writing the data into json file.
 json.dump(quotesFinalObject,jsonFile, indent=4)

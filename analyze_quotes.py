@@ -20,7 +20,7 @@ def totalQuotesBy(authorName):
     resultStatement = "No. of quotations authored by the given {} : ".format(authorName)
     print("\n") #To get Line Space
     print(resultStatement + str(quotesCount[0][0]))
-    
+    print("\n") #To get Line Space
 
 
 def analyseTagsCount():

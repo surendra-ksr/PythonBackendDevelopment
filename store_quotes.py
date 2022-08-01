@@ -24,23 +24,25 @@ cursorObject.execute(createTagsTable_command)
 
 insertQuotesCommand = "INSERT INTO quotes VALUES(?,?,?);"
 insertTagsCommand = "INSERT INTO tags VALUES(?,?,?);"
- 
+
+# Opening quotes.json file with 'read' access and loading datato a variable
 jsonFile = open("quotes.json","r")
 jsonData = json.load(jsonFile)
 
-for data in jsonData:
-    quoteCount = 1
-    tagCount = 1
-    dataObj = jsonData[data]
-    for quoteObject in dataObj:
-        quote = quoteObject["quote"]
-        author = quoteObject["author"]
-        cursorObject.execute(insertQuotesCommand,(quoteCount,quote,author))
-        for each in quoteObject["tags"]:
-            cursorObject.execute(insertTagsCommand,(tagCount,each,quoteCount))
-            tagCount +=1
-        quoteCount +=1
-    break
+dataObj = jsonData["quotes"]
+#initialising quoteCount and tagCount to create 'quote_id' and 'tag_id' in the tables
+quoteCount = 1
+tagCount = 1
+#getting individual Quote and inserting it into 'quote' table
+for quoteObject in dataObj:
+    quote = quoteObject["quote"]
+    author = quoteObject["author"]
+    cursorObject.execute(insertQuotesCommand,(quoteCount,quote,author))
+    for each in quoteObject["tags"]:
+        cursorObject.execute(insertTagsCommand,(tagCount,each,quoteCount))
+        tagCount +=1
+    quoteCount +=1
+
 
 dbConnection.commit()
 
