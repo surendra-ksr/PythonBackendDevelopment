@@ -9,21 +9,18 @@ def totalQuotesCount():
     cursorObject.execute(getTotalQuotes_command)
     totalQuotes = cursorObject.fetchall()
     stringStatement = "Total no. of quotations on the website are :"
-    for each in totalQuotes:
-        for item in each:
-            print("\n") #To get Line Space
-            print(stringStatement + str(item))
+    print("\n") #To get Line Space
+    print(stringStatement + str(totalQuotes[0][0]))
+    
 
 def totalQuotesBy(authorName):
     getCountOfQuotesByAuthor_Command = """SELECT COUNT(*) FROM quotes WHERE author LIKE ?""" 
     cursorObject.execute(getCountOfQuotesByAuthor_Command,(authorName,))
     quotesCount = cursorObject.fetchall()
-    for each in quotesCount:
-        for item in each:
-            resultStatement = "No. of quotations authored by the given {} : ".format(authorName)
-            print("\n") #To get Line Space
-            print(resultStatement + str(item))
-            print("\n") #To get Line Space
+    resultStatement = "No. of quotations authored by the given {} : ".format(authorName)
+    print("\n") #To get Line Space
+    print(resultStatement + str(quotesCount[0][0]))
+    
 
 
 def analyseTagsCount():
@@ -31,10 +28,11 @@ def analyseTagsCount():
     cursorObject.execute(getAnalysisOfTags_Command)
     tagsAnalysis = cursorObject.fetchall()
     strings = ["Minimum no. of tags on the quotations: ", "Maximun no. of tags on the quotations: ","Average no. of tags on the quotations: "]
-    for each in tagsAnalysis:
-        for i in range(len(each)):
-            print(strings[i] + str(each[i]))
-        print("\n") #To get Line Space
+    
+    for i in range(3):
+        print(strings[i] + str(tagsAnalysis[0][i]))
+    print("\n") #To get Line Space
+    
             
 def getTopNnoOfAuthors(N):
     getAnalysisOfTags_Command = """SELECT author, COUNT(author) AS countQuotes FROM quotes GROUP BY author ORDER BY countQuotes DESC LIMIT ? """ 
@@ -42,10 +40,8 @@ def getTopNnoOfAuthors(N):
     authors = cursorObject.fetchall()
     print("\n") #To get Line Space
     print("Top {} authors who authored the maximum number of quotations are : ".format(N))
-    for each in authors:
-        for i in range(len(each)):
-            print(each[0])
-            break
+    for i in range(N):
+        print(authors[i][0])
     print("\n") #To get Line Space      
 
 
