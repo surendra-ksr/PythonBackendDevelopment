@@ -18,14 +18,16 @@ while flag:
     for quoteDiv in quoteDivs:
         quoteData = dict()
         tags=[]
+        
         quoteElements = quoteDiv.find_all("span",class_="text")
         for quoteItem in quoteElements:
-            quoteData["quote"] = quoteItem.text
-            """print(quoteItem.text, end="\n"*2)"""
+            quoteItem = quoteItem.text.replace('\u201c', '').replace('\u201d', '')
+            quoteData["quote"] = quoteItem
+
         authorElements = quoteDiv.find_all("small",class_="author")
         for authorItem in authorElements:
             quoteData["author"] = authorItem.text
-            """print(authorItem.text, end="\n"*2)"""
+
         authorLinks = quoteDiv.find_all("a")
         for link in authorLinks:
             linkUrl = link["href"]
@@ -37,7 +39,6 @@ while flag:
         for tag  in tagElements:
             tags.append(tag.text)
 
-            """print(tag.text,  end="\n"*2)"""
         quoteData["tags"] = tags
         quotes.append(quoteData)
 
@@ -52,10 +53,10 @@ for authorUrl in authorUrlsList:
     authorPageUrl = f"http://quotes.toscrape.com/{authorUrl}"
     authorPage = requests.get(authorPageUrl)
     authorPageSoup = BeautifulSoup(authorPage.content, "html.parser")
-    authorDate = authorPageSoup.find_all("span", class_="author-born-date")
+    authorBornDate = authorPageSoup.find_all("span", class_="author-born-date")
     authorLocation = authorPageSoup.find_all("span", class_="author-born-location")
     author= dict()
-    for date in authorDate:
+    for date in authorBornDate:
         dateEle = date.text
         
     for each in authorLocation:
@@ -77,7 +78,7 @@ for authorUrl in authorUrlsList:
 quotesFinalObject["quotes"] = quotes
 quotesFinalObject["authors"] = authors
 
- 
+
 
 jsonFile = open("quotes.json","w")
 json.dump(quotesFinalObject,jsonFile, indent=4)
