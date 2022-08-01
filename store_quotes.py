@@ -7,12 +7,12 @@ dbConnection = sqlite3.connect('quotes.db')
 cursorObject = dbConnection.cursor()
 print("Connected to database")
 
-createTable_command = """CREATE TABLE quotes (
+createQuotesTable_command = """CREATE TABLE quotes (
     quote_id INTEGER PRIMARY KEY,
     quote TEXT,
     author VARCHAR(200));"""
 
-"""cursorObject.execute(createTable_command)"""
+cursorObject.execute(createQuotesTable_command)
 
 createTagsTable_command = """CREATE TABLE tags (
     tag_id INTEGER PRIMARY KEY,
@@ -36,10 +36,12 @@ for data in jsonData:
         quote = quoteObject["quote"]
         author = quoteObject["author"]
         cursorObject.execute(insertQuotesCommand,(quoteCount,quote,author))
-        quoteCount +=1
         for each in quoteObject["tags"]:
             cursorObject.execute(insertTagsCommand,(tagCount,each,quoteCount))
             tagCount +=1
+        quoteCount +=1
     break
 
 dbConnection.commit()
+
+dbConnection.close()
