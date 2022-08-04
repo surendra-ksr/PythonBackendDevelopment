@@ -110,7 +110,7 @@ def get_authors_list(authorUrlsList):
     quotesFinalObject = dict()
     authors = []
     for authorUrl in authorUrlsList:
-        authorPageUrl = f"http://quotes.toscrape.com/{authorUrl}"
+        authorPageUrl = f"http://quotes.toscrape.com{authorUrl}"
         authorPage = requests.get(authorPageUrl)
         authorPageSoup = BeautifulSoup(authorPage.content, "html.parser")
 
