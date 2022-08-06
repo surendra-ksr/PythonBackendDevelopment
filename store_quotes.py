@@ -1,84 +1,83 @@
 import sqlite3
 import json
-from tkinter.tix import INTEGER
 
-dbConnection = sqlite3.connect('quotes.db')
+db_connection = sqlite3.connect('quotes.db')
 
-cursorObject = dbConnection.cursor()
+cursor_object = db_connection.cursor()
 print("Connected to database")
 
 
 
 def creating_quotes_tags_authors_table():
-    createQuotesTable_command = """CREATE TABLE quotes (
+    create_quotes_table_command = """CREATE TABLE quotes (
     quote_id INTEGER PRIMARY KEY,
     quote TEXT,
     author VARCHAR(200));"""
 
-    createAuthorsTable_command = """CREATE TABLE authors (
+    create_authors_table_command = """CREATE TABLE authors (
     name VARCHAR(200) PRIMARY KEY,
     born TEXT,
     reference_url VARCHAR(250));"""
 
-    createTagsTable_command = """CREATE TABLE tags (
+    create_tags_table_command = """CREATE TABLE tags (
     tag_id INTEGER PRIMARY KEY,
     tag VARCHAR(100),
     quote_id INTEGER,
     FOREIGN KEY(quote_id) REFERENCES quotes(quote_id) on DELETE CASCADE );"""
 
-    cursorObject.execute(createQuotesTable_command)
-    cursorObject.execute(createAuthorsTable_command)
-    cursorObject.execute(createTagsTable_command)
+    cursor_object.execute(create_quotes_table_command)
+    cursor_object.execute(create_authors_table_command)
+    cursor_object.execute(create_tags_table_command)
 
-"""creating_quotes_tags_authors_table()"""
+creating_quotes_tags_authors_table()
 
 
 def get_json_data_from_json_file():
 
     # Opening quotes.json file with 'read' access and loading data to a variable
-    jsonFile = open("quotes.json","r")
-    jsonData = json.load(jsonFile)
-    return jsonData
+    json_file = open("quotes.json","r")
+    json_data = json.load(json_file)
+    return json_data
 
-jsonData = get_json_data_from_json_file()
+json_data = get_json_data_from_json_file()
 
 
-def insert_data_into_authors_table(authorsList):
-    insertAuthorsCommand = "INSERT INTO authors VALUES(?,?,?);"
-    for author in authorsList:
+def insert_data_into_authors_table(authors_list):
+    insert_authors_command = "INSERT INTO authors VALUES(?,?,?);"
+    for author in authors_list:
         name = author["name"]
         born = author["born"]
         reference = author["reference"]
-        cursorObject.execute(insertAuthorsCommand,(name,born,reference))
+        cursor_object.execute(insert_authors_command,(name,born,reference))
         
 
-def inserting_data_into_tables(jsonData):
-    quotesList = jsonData["quotes"]
-    authorsList = jsonData["authors"]
+def inserting_data_into_tables(json_data):
+    quotes_list = json_data["quotes"]
+    authors_list = json_data["authors"]
 
-    #initialising quoteCount and tagCount to create 'quote_id' and 'tag_id' in the tables
-    quoteCount = 1
-    tagCount = 1
-    insertQuotesCommand = "INSERT INTO quotes VALUES(?,?,?);"
-    insertTagsCommand = "INSERT INTO tags VALUES(?,?,?);"
+    #initialising quote_count and tag_count to create 'quote_id' and 'tag_id' in the tables
+    quote_count = 1
+    tag_count = 1
+    insert_quotes_command = "INSERT INTO quotes VALUES(?,?,?);"
+    insert_tags_command = "INSERT INTO tags VALUES(?,?,?);"
     
     #getting individual Quote and inserting it into 'quote' table
-    for quoteObject in quotesList:
-        quote = quoteObject["quote"]
-        author = quoteObject["author"]
-        cursorObject.execute(insertQuotesCommand,(quoteCount,quote,author))
+    for quote_object in quotes_list:
+        quote = quote_object["quote"]
+        author = quote_object["author"]
+        cursor_object.execute(insert_quotes_command,(quote_count,quote,author))
    
-        for each in quoteObject["tags"]:
-            cursorObject.execute(insertTagsCommand,(tagCount,each,quoteCount))
-            tagCount +=1
+        for each in quote_object["tags"]:
+            cursor_object.execute(insert_tags_command,(tag_count,each,quote_count))
+            tag_count +=1
         
-        quoteCount +=1
+        quote_count +=1
 
-    insert_data_into_authors_table(authorsList)
+    insert_data_into_authors_table(authors_list)
 
-inserting_data_into_tables(jsonData)
+inserting_data_into_tables(json_data)
 
 
-dbConnection.commit()
+db_connection.commit()
 
-dbConnection.close()
+db_connection.close()

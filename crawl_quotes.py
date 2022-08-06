@@ -3,137 +3,143 @@ from bs4 import BeautifulSoup
 import json
 
 
-def get_quotes(quoteElements):
-    for quoteItem in quoteElements:
-        # Using replace() to remove the extra quotes(") from the quotes extracted
-        quoteItem = quoteItem.text.replace('\u201c', '').replace('\u201d', '')
-        return quoteItem
+def get_all_quotes_and_Author_urls_list():
+    # "is_last_page_reached" is used to stop the function if the last page is reached.
+    is_last_page_not_reached = True
+    next_page_url = ""
+    author_urls_set = set()
+    quotes = []
+    while is_last_page_not_reached:
+        page_soup = get_page_soup(next_page_url)
+        next_element = page_soup.find_all("li", class_="next")
+        get_quotes_and_authors_set(page_soup,author_urls_set,quotes)
+        # Checking if the last page is reached.
+        if (next_element!=[]):
+            next_page_url = next_element[0].find("a")["href"]
+        else:
+            is_last_page_not_reached = False
 
-def get_author_of_quote(authorElements):
-    for authorItem in authorElements:
-        return authorItem.text
+    author_urls_list = list(author_urls_set)
+    quotes_list_and_author_urls_list = [quotes,author_urls_list]
+    return quotes_list_and_author_urls_list
 
-def get_author_urls(authorLinks):
-    for link in authorLinks:
-        linkUrl = link["href"]
-        if "/author/" in linkUrl:
-            return linkUrl
+def get_page_soup(next_page_url):
+    quotes_url = f"http://quotes.toscrape.com{next_page_url}"
+    quotes_page = requests.get(quotes_url)
+    page_soup = BeautifulSoup(quotes_page.content, "html.parser")
+    return page_soup
+
+
+def get_quotes_and_authors_set(page_soup,author_urls_set,quotes):
+    quote_divs = page_soup.find_all("div",class_="quote")
+    for quote_div in quote_divs:
+        quote_data_and_author_url = get_each_quote_data(quote_div)
             
-def get_tags_of_each_quote(tagElements): 
+        quotes.append(quote_data_and_author_url[0])
+        author_urls_set.add(quote_data_and_author_url[1])
+
+def get_each_quote_data(quote_div):
+    quote_data = dict()
+    quote_elements = quote_div.find_all("span",class_="text")
+    quote_data["quote"] = get_quotes(quote_elements)
+
+    author_elements = quote_div.find_all("small",class_="author")
+    quote_data["author"] = get_author_of_quote(author_elements)
+
+    author_links = quote_div.find("a")
+    each_author_link = author_links["href"]
+
+    tag_elements = quote_div.find_all("a", class_="tag")
+    quote_data["tags"] = get_tags_of_each_quote(tag_elements)
+
+    quote_data_and_author_url = [quote_data,each_author_link]
+    return quote_data_and_author_url
+
+
+def get_quotes(quote_elements):
+    for quote_item in quote_elements:
+        # Using replace() to remove the extra quotes(") from the quotes extracted
+        quote_item = quote_item.text.strip("\u201c,\u201d").replace("\u2032","")
+        return quote_item
+
+def get_author_of_quote(author_elements):
+    for author_item in author_elements:
+        return author_item.text
+
+            
+def get_tags_of_each_quote(tag_elements): 
     tags = []
-    for tag  in tagElements:
+    for tag  in tag_elements:
         tags.append(tag.text)
     return tags
 
-def get_each_quote_data(quoteDiv):
-    quoteData = dict()
-    quoteElements = quoteDiv.find_all("span",class_="text")
-    quoteData["quote"] = get_quotes(quoteElements)
 
-    authorElements = quoteDiv.find_all("small",class_="author")
-    quoteData["author"] = get_author_of_quote(authorElements)
+quotes_list_and_author_urls_list = get_all_quotes_and_Author_urls_list()
 
-    authorLinks = quoteDiv.find_all("a")
-    eachAuthorLink = get_author_urls(authorLinks)
 
-    tagElements = quoteDiv.find_all("a", class_="tag")
-    quoteData["tags"] = get_tags_of_each_quote(tagElements)
+def get_author_details(author_page_soup):
+    #To get author name and born date and location from author_page_soup
+    author = dict()
+    author_born_date = author_page_soup.find_all("span", class_="author-born-date")
+    author_location = author_page_soup.find_all("span", class_="author-born-location")
+    author_name_div = author_page_soup.find("h3", class_="author-title")
 
-    quoteDataAndAuthorUrl = [quoteData,eachAuthorLink]
-    return quoteDataAndAuthorUrl
+    author["name"] = get_author_name(author_name_div)
+    author["born"] = get_author_born_details(author_born_date,author_location)
     
+    return author
 
-def get_all_quotes_and_Author_urls_list():
-    # flag is used to stop the function if the last page is reached.
-    flag = True
-    pageNo = 1
-    authorUrlsSet = set()
-    quotes = []
-    while flag:
-        quotesUrl = f"http://quotes.toscrape.com/page/{pageNo}"
-        quotesPage = requests.get(quotesUrl)
-        pageSoup = BeautifulSoup(quotesPage.content, "html.parser")
-        nextElement = pageSoup.find_all("li", class_="next")
-        if (nextElement!=[]):
-            nextItemUrl = nextElement[0].find("a")["href"]
-
-        quoteDivs = pageSoup.find_all("div",class_="quote")
-        for quoteDiv in quoteDivs:
-            quoteDataAndAuthorUrl = get_each_quote_data(quoteDiv)
-            
-            quotes.append(quoteDataAndAuthorUrl[0])
-            authorUrlsSet.add(quoteDataAndAuthorUrl[1])
-
-        # Checking if the last page is reached.
-        if nextElement==[]:
-            flag = False
-        pageNo +=1
-
-    authorUrlsList = list(authorUrlsSet)
-    quotesListAndAuthorUrlsList = [quotes,authorUrlsList]
-    return quotesListAndAuthorUrlsList
-
-quotesListAndAuthorUrlsList = get_all_quotes_and_Author_urls_list()
-
-def get_author_name(authorNameDiv):
-    for each in authorNameDiv:
+def get_author_name(author_name_div):
+    for each in author_name_div:
         name = each
         break
     return name
 
-def get_author_born_details(authorBornDate,authorLocation):
-    for date in authorBornDate:
-        dateEle = date.text
-        
-    for each in authorLocation:
-        locatonEle = each.text
+def get_author_born_details(author_born_date,author_location):
+    date_element = ""
+    locaton_element = ""
+    for date in author_born_date:
+        date_element = date.text
+   
+    for each in author_location:
+        locaton_element = each.text
 # Born date and location is converted into a single string
-    bornDetails = dateEle+" "+locatonEle
-    return bornDetails
+    born_details = date_element+" "+locaton_element
+    return born_details
 
 
-def get_author_details(authorPageSoup):
-    #To get author name and born date and location from authorPageSoup
-    author = dict()
-    authorBornDate = authorPageSoup.find_all("span", class_="author-born-date")
-    authorLocation = authorPageSoup.find_all("span", class_="author-born-location")
-    authorNameDiv = authorPageSoup.find("h3", class_="author-title")
+author_urls_list = quotes_list_and_author_urls_list[1]
 
-    author["name"] = get_author_name(authorNameDiv)
-    author["born"] = get_author_born_details(authorBornDate,authorLocation)
-    
-    return author
-
-authorUrlsList = quotesListAndAuthorUrlsList[1]
-
-def get_authors_list(authorUrlsList):
-    quotesFinalObject = dict()
+def get_authors_list(author_urls_list):
+    quotes_final_object = dict()
     authors = []
-    for authorUrl in authorUrlsList:
-        authorPageUrl = f"http://quotes.toscrape.com{authorUrl}"
-        authorPage = requests.get(authorPageUrl)
-        authorPageSoup = BeautifulSoup(authorPage.content, "html.parser")
-
-        author = get_author_details(authorPageSoup)
-        
-        author["reference"] = authorPageUrl
-
+    for author_url in author_urls_list:
+        author = each_author_page_soup(author_url)
         authors.append(author)
         
     return authors
 
-def get_final_data(quotesListAndAuthorUrlsList):
-    quotesFinalObject = dict()
-    authorUrlsList = quotesListAndAuthorUrlsList[1]
-    quotesFinalObject["quotes"] = quotesListAndAuthorUrlsList[0]
-    quotesFinalObject["authors"] = get_authors_list(authorUrlsList)
+def each_author_page_soup(author_url):
+    author_page_url = f"http://quotes.toscrape.com{author_url}"
+    author_page = requests.get(author_page_url)
+    author_page_soup = BeautifulSoup(author_page.content, "html.parser")
+    author = get_author_details(author_page_soup)
+    author["reference"] = author_page_url
+    return author
 
-    return quotesFinalObject
+
+def get_final_data(quotes_list_and_author_urls_list):
+    quotes_final_object = dict()
+    author_urls_list = quotes_list_and_author_urls_list[1]
+    quotes_final_object["quotes"] = quotes_list_and_author_urls_list[0]
+    quotes_final_object["authors"] = get_authors_list(author_urls_list)
+
+    return quotes_final_object
     
-quotesFinalObject = get_final_data(quotesListAndAuthorUrlsList)
+quotes_final_object = get_final_data(quotes_list_and_author_urls_list)
 
 #Opening json file with 'write' access mode.
 jsonFile = open("quotes.json","w")
 
 # Writing the data into json file.
-json.dump(quotesFinalObject,jsonFile, indent=4)
+json.dump(quotes_final_object,jsonFile, indent=4)
